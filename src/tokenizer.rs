@@ -20,6 +20,7 @@ struct TokenizerConfig {
     model_path: Option<PathBuf>,
     wsconst: String,
     tags: Vec<String>,
+    keep_untagged: bool,
     case_sensitive: bool,
 }
 
@@ -28,6 +29,7 @@ struct ScalarTokenizer {
     prefilter: KyteaFullwidthFilter,
     postfilters: Vec<Arc<dyn SentenceFilter>>,
     tags: Vec<String>,
+    keep_untagged: bool,
     case_sensitive: bool,
 }
 
@@ -123,6 +125,7 @@ fn parse_config_values(values: &[String]) -> Result<TokenizerConfig, String> {
         .ok()
         .map(|value| parse_tag_list(&value))
         .unwrap_or_default();
+    let mut keep_untagged = false;
     let mut case_sensitive = false;
 
     let mut i = 0;
@@ -158,6 +161,9 @@ fn parse_config_values(values: &[String]) -> Result<TokenizerConfig, String> {
                     }
                 };
             }
+            Some("keep_untagged") => {
+                keep_untagged = true;
+            }
             Some(value) if model_path.is_none() => {
                 model_path = Some(PathBuf::from(value));
             }
@@ -173,6 +179,7 @@ fn parse_config_values(values: &[String]) -> Result<TokenizerConfig, String> {
         model_path,
         wsconst,
         tags,
+        keep_untagged,
         case_sensitive,
     })
 }
@@ -193,9 +200,10 @@ fn config_cache_key(config: &TokenizerConfig) -> String {
         .map(|path| path.display().to_string())
         .unwrap_or_else(|| "<embedded>".to_string());
     format!(
-        "model={model}\nwsconst={}\ntags={}\ncase_sensitive={}",
+        "model={model}\nwsconst={}\ntags={}\nkeep_untagged={}\ncase_sensitive={}",
         config.wsconst,
         config.tags.join(","),
+        config.keep_untagged,
         config.case_sensitive
     )
 }
@@ -214,6 +222,7 @@ fn tokenize_text(
     prefilter: &KyteaFullwidthFilter,
     postfilters: &[Arc<dyn SentenceFilter>],
     tags: &[String],
+    keep_untagged: bool,
     case_sensitive: bool,
 ) -> Result<Vec<Token>, String> {
     if original_text.is_empty() {
@@ -239,11 +248,11 @@ fn tokenize_text(
         sentence
             .iter_tokens()
             .map(|token| {
-                token
-                    .tags()
-                    .iter()
-                    .flatten()
-                    .any(|tag| tags.iter().any(|expected| tag.starts_with(expected)))
+                let mut token_tags = token.tags().iter().flatten().peekable();
+                if token_tags.peek().is_none() {
+                    return keep_untagged;
+                }
+                token_tags.any(|tag| tags.iter().any(|expected| tag.starts_with(expected)))
             })
             .collect()
     };
@@ -296,6 +305,7 @@ fn scalar_tokenizer(config: &TokenizerConfig) -> Result<Rc<ScalarTokenizer>, Str
             prefilter: KyteaFullwidthFilter,
             postfilters: build_post_filters(&config.wsconst)?,
             tags: config.tags.clone(),
+            keep_untagged: config.keep_untagged,
             case_sensitive: config.case_sensitive,
         });
         cache.borrow_mut().insert(key, Rc::clone(&tokenizer));
@@ -312,6 +322,7 @@ pub fn scalar_tokens(text: &str, options: Option<&str>) -> Result<Vec<String>, S
         &tokenizer.prefilter,
         &tokenizer.postfilters,
         &tokenizer.tags,
+        tokenizer.keep_untagged,
         tokenizer.case_sensitive,
     )
     .map(|tokens| {
@@ -364,6 +375,7 @@ mod tests {
         let config = parse_config_values(&[]).expect("config parses");
         assert_eq!(config.wsconst, "DGR");
         assert!(config.tags.is_empty());
+        assert!(!config.keep_untagged);
         assert!(!config.case_sensitive);
     }
 
@@ -376,6 +388,7 @@ mod tests {
             "DG",
             "tags",
             "名詞,動詞",
+            "keep_untagged",
             "case",
             "sensitive",
         ]))
@@ -384,6 +397,7 @@ mod tests {
         assert_eq!(config.model_path, Some(PathBuf::from(".tmp/model.zst")));
         assert_eq!(config.wsconst, "DG");
         assert_eq!(config.tags, strings(&["名詞", "動詞"]));
+        assert!(config.keep_untagged);
         assert!(config.case_sensitive);
     }
 

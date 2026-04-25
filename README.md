@@ -204,6 +204,19 @@ SELECT vaporetto_split(
 );
 ```
 
+Use `keep_untagged` with `tags` when you want selected tagged words plus tokens
+that have no POS/tag data, such as ASCII identifiers or product codes outside
+the model's tag prediction:
+
+```sql
+SELECT vaporetto_split(
+  '東京でasdfoujbvaを検索した。',
+  '/',
+  'tags 名詞 keep_untagged'
+);
+-- 東京/asdfoujbva/検索
+```
+
 ASCII letters are case-insensitive by default. The returned token is folded to
 lowercase unless `case sensitive` is specified:
 
@@ -233,6 +246,9 @@ Optional arguments:
   Defaults to `DGR`.
 - `tags <prefixes>`: Comma-separated Vaporetto tag prefixes to keep. When
   omitted, all tokens are returned.
+- `keep_untagged`: With `tags`, also keep tokens that have no POS/tag data.
+  This is useful for ASCII identifiers, product codes, and other tokens outside
+  the model's tag prediction.
 - `case sensitive`: Preserve ASCII uppercase/lowercase distinctions.
 - `case insensitive`: Explicitly request the default ASCII case-insensitive
   behavior.

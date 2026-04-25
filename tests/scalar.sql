@@ -13,3 +13,5 @@ SELECT 'AND_CASE_DEFAULT', vaporetto_and_query('Hello HELLO');
 SELECT 'AND_CASE_SENSITIVE', vaporetto_and_query('Hello HELLO', 'case sensitive');
 SELECT 'NOUN_SPLIT', vaporetto_split('東京で検索エンジンを実験した。', '/', 'tags 名詞');
 SELECT 'NOUN_AND_QUERY', vaporetto_and_query('東京で検索エンジンを実験した。', 'tags 名詞');
+SELECT 'NOUN_UNTAGGED_SPLIT', vaporetto_split('東京でasdfoujbvaを検索した。', '/', 'tags 名詞 keep_untagged');
+SELECT 'NOUN_UNTAGGED_AND_QUERY', vaporetto_and_query('東京でasdfoujbvaを検索した。', 'tags 名詞 keep_untagged');
