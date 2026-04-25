@@ -6,17 +6,32 @@
   contain the `duckdb-vaporetto` extension, which is licensed under
   `MIT OR Apache-2.0`.
 - Release artifacts with `-with-model` contain the `duckdb-vaporetto` extension
-  under `MIT OR Apache-2.0` and additionally bundle the Vaporetto distribution
-  model
-  [`bccwj-suw+unidic_pos+kana.model.zst`](https://github.com/daac-tools/vaporetto-models/releases),
-  which is licensed under
+  under `MIT OR Apache-2.0` and additionally bundle one Vaporetto distribution
+  model from
+  [`daac-tools/vaporetto-models`](https://github.com/daac-tools/vaporetto-models/releases).
+- Native `-with-model` artifacts and wasm artifacts whose name contains
+  `full-bccwj-suw-unidic-pos-kana` embed
+  `bccwj-suw+unidic_pos+kana.model.zst`, which is licensed under
   [BSD-3-Clause](https://opensource.org/license/BSD-3-Clause).
+- Wasm artifacts whose name contains `small-bccwj-suw-c1.0` embed
+  `bccwj-suw_c1.0.model.zst`, which is licensed under `MIT OR Apache-2.0`.
 
 ## Bundled Model Notice
 
-The `-with-model` release artifacts embed the Vaporetto distribution model
-[`bccwj-suw+unidic_pos+kana.model.zst`](https://github.com/daac-tools/vaporetto-models/releases)
-from `daac-tools/vaporetto-models` v0.5.0.
+The `-with-model` release artifacts embed Vaporetto distribution models from
+`daac-tools/vaporetto-models` v0.5.0.
+
+## bccwj-suw_c1.0.model.zst
+
+Copyright 2022, LegalForce, Inc.
+Copyright 2023, LegalOn Technologies, Inc.
+
+Licensed under either of
+
+* Apache License, Version 2.0 (LICENSE-APACHE or http://www.apache.org/licenses/LICENSE-2.0)
+* MIT license (LICENSE-MIT or http://opensource.org/licenses/MIT)
+
+at your option.
 
 ## bccwj-suw+unidic_pos+kana.model.zst
 

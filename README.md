@@ -141,9 +141,18 @@ SELECT vaporetto_split(
 
 ### DuckDB-Wasm
 
-Release artifacts whose name contains `wasm_eh-with-model` are for DuckDB-Wasm.
-They bundle a Vaporetto model because browser-side DuckDB cannot read a local
-model path from your machine in the same way as the native CLI.
+Release artifacts whose name contains `wasm_eh` are for DuckDB-Wasm. They
+bundle a Vaporetto model because browser-side DuckDB cannot read a local model
+path from your machine in the same way as the native CLI.
+
+Choose one of the two wasm builds:
+
+- `wasm_eh-small-bccwj-suw-c1.0-with-model`: embeds
+  `bccwj-suw_c1.0.model.zst`. This is the smaller build and is useful when
+  download size matters, but it does not include part-of-speech tags.
+- `wasm_eh-full-bccwj-suw-unidic-pos-kana-with-model`: embeds
+  `bccwj-suw+unidic_pos+kana.model.zst`. This is the larger build and supports
+  richer vocabulary and tag filtering such as `tags 名詞`.
 
 DuckDB-Wasm requires unsigned extension loading for this project:
 
@@ -281,15 +290,24 @@ DUCKDB_VAPORETTO_EMBED_MODEL=/path/to/bccwj-suw+unidic_pos+kana.model.zst \
   cargo build --release
 ```
 
-To build a DuckDB-Wasm extension with a compact bundled model:
+To build both DuckDB-Wasm extensions:
 
 ```sh
 make wasm-extension
 ```
 
-The wasm build installs Emscripten under `.tmp/emsdk`, fetches the model under
-`.tmp/models`, and writes
-`target/wasm32-unknown-emscripten/release/duckdb_vaporetto.duckdb_extension.wasm`.
+The wasm build installs Emscripten under `.tmp/emsdk`, fetches models under
+`.tmp/models`, and writes:
+
+- `target/wasm32-unknown-emscripten/release/small/duckdb_vaporetto.duckdb_extension.wasm`
+- `target/wasm32-unknown-emscripten/release/full/duckdb_vaporetto.duckdb_extension.wasm`
+
+To build only one variant:
+
+```sh
+make wasm-extension-small
+make wasm-extension-full
+```
 
 ## Test With DuckDB
 
@@ -325,10 +343,10 @@ The `duckdb-vaporetto` extension is licensed under `MIT OR Apache-2.0`.
 
 Release artifacts without `-with-model` do not bundle a Vaporetto model and use
 the `duckdb-vaporetto` license. Release artifacts with `-with-model`
-additionally bundle
-[`bccwj-suw+unidic_pos+kana.model.zst`](https://github.com/daac-tools/vaporetto-models/releases),
-which is licensed under
-[BSD-3-Clause](https://opensource.org/license/BSD-3-Clause).
+additionally bundle a Vaporetto model. The small wasm build bundles
+`bccwj-suw_c1.0.model.zst`, licensed under `MIT OR Apache-2.0`. The full wasm
+build and native `-with-model` builds bundle
+`bccwj-suw+unidic_pos+kana.model.zst`, licensed under `BSD-3-Clause`.
 
 See [MODEL_LICENSES.md](MODEL_LICENSES.md) for the bundled model notice and
 license text.

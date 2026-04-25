@@ -2,17 +2,22 @@ DUCKDB_VERSION ?= v1.5.2
 MODEL_VERSION ?= v0.5.0
 MODEL_NAME ?= bccwj-suw+unidic_pos+kana
 CI_MODEL_NAME ?= bccwj-suw_c0.003
+WASM_SMALL_MODEL_NAME ?= bccwj-suw_c1.0
+WASM_FULL_MODEL_NAME ?= bccwj-suw+unidic_pos+kana
 MODEL_FILE := .tmp/models/$(MODEL_NAME)/$(MODEL_NAME).model.zst
 CI_MODEL_FILE := .tmp/models/$(CI_MODEL_NAME)/$(CI_MODEL_NAME).model.zst
+WASM_SMALL_MODEL_FILE := .tmp/models/$(WASM_SMALL_MODEL_NAME)/$(WASM_SMALL_MODEL_NAME).model.zst
+WASM_FULL_MODEL_FILE := .tmp/models/$(WASM_FULL_MODEL_NAME)/$(WASM_FULL_MODEL_NAME).model.zst
 DUCKDB_CLI := .tmp/duckdb/duckdb
 EMSDK_VERSION ?= 5.0.6
 EMSDK_DIR ?= .tmp/emsdk
 
 UNAME_S := $(shell uname -s)
 RELEASE_EXT := target/release/duckdb_vaporetto.duckdb_extension
-WASM_RELEASE_EXT := target/wasm32-unknown-emscripten/release/duckdb_vaporetto.duckdb_extension.wasm
+WASM_SMALL_RELEASE_EXT := target/wasm32-unknown-emscripten/release/small/duckdb_vaporetto.duckdb_extension.wasm
+WASM_FULL_RELEASE_EXT := target/wasm32-unknown-emscripten/release/full/duckdb_vaporetto.duckdb_extension.wasm
 
-.PHONY: all test build release embedded-release duckdb-extension wasm-extension emsdk duckdb model ci-model test-extension test-embedded fmt clean
+.PHONY: all test build release embedded-release duckdb-extension wasm-extension wasm-extension-small wasm-extension-full emsdk duckdb model ci-model wasm-small-model wasm-full-model test-extension test-embedded fmt clean
 
 all: build
 
@@ -28,8 +33,13 @@ embedded-release: model
 duckdb-extension:
 	cargo duckdb-ext build -a v1.2.0 -- --release
 
-wasm-extension: emsdk ci-model
-	scripts/build-wasm.sh "$(abspath $(CI_MODEL_FILE))" "$(abspath $(WASM_RELEASE_EXT))"
+wasm-extension: wasm-extension-small wasm-extension-full
+
+wasm-extension-small: emsdk wasm-small-model
+	scripts/build-wasm.sh "$(abspath $(WASM_SMALL_MODEL_FILE))" "$(abspath $(WASM_SMALL_RELEASE_EXT))"
+
+wasm-extension-full: emsdk wasm-full-model
+	scripts/build-wasm.sh "$(abspath $(WASM_FULL_MODEL_FILE))" "$(abspath $(WASM_FULL_RELEASE_EXT))"
 
 emsdk:
 	if [ ! -d "$(EMSDK_DIR)/.git" ]; then git clone --depth 1 https://github.com/emscripten-core/emsdk.git "$(EMSDK_DIR)"; fi
@@ -48,6 +58,12 @@ ci-model: $(CI_MODEL_FILE)
 
 $(CI_MODEL_FILE):
 	scripts/fetch-vaporetto-model.sh "$(CI_MODEL_NAME)"
+
+wasm-small-model:
+	scripts/fetch-vaporetto-model.sh "$(WASM_SMALL_MODEL_NAME)"
+
+wasm-full-model:
+	scripts/fetch-vaporetto-model.sh "$(WASM_FULL_MODEL_NAME)"
 
 test:
 	cargo test
