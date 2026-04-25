@@ -240,6 +240,18 @@ SELECT vaporetto_split(
 -- 東京/asdfoujbva/検索
 ```
 
+A practical full-text search setup is to keep content-word tags and untagged
+tokens:
+
+```sql
+SELECT vaporetto_split(
+  '東京で新しいDuckDB検索エンジンを実験した。',
+  ' ',
+  'tags 名詞,動詞,形容詞,副詞,接頭辞,接尾辞 keep_untagged'
+);
+-- 東京 新しい duckdb 検索 エンジン 実験 し
+```
+
 ASCII letters are case-insensitive by default. The returned token is folded to
 lowercase unless `case sensitive` is specified:
 
