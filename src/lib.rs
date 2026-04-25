@@ -173,14 +173,15 @@ mod wasm {
         duckdb_scalar_function_add_parameter, duckdb_scalar_function_set_error,
         duckdb_scalar_function_set_function, duckdb_scalar_function_set_name,
         duckdb_scalar_function_set_return_type, duckdb_scalar_function_t, duckdb_string_t,
-        duckdb_string_t_data, duckdb_string_t_length, duckdb_validity_row_is_valid,
-        duckdb_validity_set_row_invalid, duckdb_vector, duckdb_vector_assign_string_element_len,
+        duckdb_string_t_data, duckdb_validity_row_is_valid, duckdb_validity_set_row_invalid,
+        duckdb_vector, duckdb_vector_assign_string_element_len,
         duckdb_vector_ensure_validity_writable, duckdb_vector_get_data, duckdb_vector_get_validity,
     };
 
     use crate::tokenizer;
 
     const DUCKDB_API_VERSION: &str = "v1.2.0";
+    const DUCKDB_STRING_INLINE_MAX_LEN: usize = 12;
 
     // DuckDB-Wasm's main module exports a JavaScript-legalized lseek symbol,
     // but Rust/Emscripten side modules import the raw i64 ABI. Keep libc's
@@ -212,9 +213,16 @@ mod wasm {
                 return None;
             }
 
-            let mut value = unsafe { *self.data.add(row) };
-            let len = unsafe { duckdb_string_t_length(value) } as usize;
-            let ptr = unsafe { duckdb_string_t_data(&mut value) } as *const u8;
+            // DuckDB-Wasm's C API helper can expose trailing inline buffer bytes
+            // for short strings, so read the inlined representation directly.
+            let raw = unsafe { self.data.add(row) } as *const u8;
+            let len = unsafe { ptr::read_unaligned(raw as *const u32) } as usize;
+            let ptr = if len <= DUCKDB_STRING_INLINE_MAX_LEN {
+                unsafe { raw.add(4) }
+            } else {
+                let mut value = unsafe { *self.data.add(row) };
+                (unsafe { duckdb_string_t_data(&mut value) }) as *const u8
+            };
             let bytes = unsafe { slice::from_raw_parts(ptr, len) };
             Some(std::str::from_utf8(bytes).unwrap_or(""))
         }
