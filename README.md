@@ -139,6 +139,26 @@ SELECT vaporetto_split(
 );
 ```
 
+### DuckDB-Wasm
+
+Release artifacts whose name contains `wasm_eh-with-model` are for DuckDB-Wasm.
+They bundle a Vaporetto model because browser-side DuckDB cannot read a local
+model path from your machine in the same way as the native CLI.
+
+DuckDB-Wasm requires unsigned extension loading for this project:
+
+```js
+await db.open({
+  allowUnsignedExtensions: true,
+  filesystem: { allowFullHTTPReads: true },
+});
+
+await conn.query(
+  "LOAD 'http://127.0.0.1:4173/extensions/duckdb_vaporetto.duckdb_extension.wasm'"
+);
+await conn.query("SELECT vaporetto_split('東京特許許可局', '/')");
+```
+
 ## Usage
 
 Use `vaporetto_split()` to create the text that DuckDB FTS should index and to
@@ -260,6 +280,16 @@ Development builds only have an embedded default when built with
 DUCKDB_VAPORETTO_EMBED_MODEL=/path/to/bccwj-suw+unidic_pos+kana.model.zst \
   cargo build --release
 ```
+
+To build a DuckDB-Wasm extension with a compact bundled model:
+
+```sh
+make wasm-extension
+```
+
+The wasm build installs Emscripten under `.tmp/emsdk`, fetches the model under
+`.tmp/models`, and writes
+`target/wasm32-unknown-emscripten/release/duckdb_vaporetto.duckdb_extension.wasm`.
 
 ## Test With DuckDB
 

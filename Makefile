@@ -5,11 +5,14 @@ CI_MODEL_NAME ?= bccwj-suw_c0.003
 MODEL_FILE := .tmp/models/$(MODEL_NAME)/$(MODEL_NAME).model.zst
 CI_MODEL_FILE := .tmp/models/$(CI_MODEL_NAME)/$(CI_MODEL_NAME).model.zst
 DUCKDB_CLI := .tmp/duckdb/duckdb
+EMSDK_VERSION ?= 5.0.6
+EMSDK_DIR ?= .tmp/emsdk
 
 UNAME_S := $(shell uname -s)
 RELEASE_EXT := target/release/duckdb_vaporetto.duckdb_extension
+WASM_RELEASE_EXT := target/wasm32-unknown-emscripten/release/duckdb_vaporetto.duckdb_extension.wasm
 
-.PHONY: all test build release embedded-release duckdb-extension duckdb model ci-model test-extension test-embedded fmt clean
+.PHONY: all test build release embedded-release duckdb-extension wasm-extension emsdk duckdb model ci-model test-extension test-embedded fmt clean
 
 all: build
 
@@ -24,6 +27,14 @@ embedded-release: model
 
 duckdb-extension:
 	cargo duckdb-ext build -a v1.2.0 -- --release
+
+wasm-extension: emsdk ci-model
+	scripts/build-wasm.sh "$(abspath $(CI_MODEL_FILE))" "$(abspath $(WASM_RELEASE_EXT))"
+
+emsdk:
+	if [ ! -d "$(EMSDK_DIR)/.git" ]; then git clone --depth 1 https://github.com/emscripten-core/emsdk.git "$(EMSDK_DIR)"; fi
+	"$(EMSDK_DIR)/emsdk" install "$(EMSDK_VERSION)"
+	"$(EMSDK_DIR)/emsdk" activate "$(EMSDK_VERSION)"
 
 duckdb:
 	scripts/fetch-duckdb-unix.sh

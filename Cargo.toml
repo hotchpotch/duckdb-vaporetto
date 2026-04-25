@@ -12,13 +12,14 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 libduckdb-sys = { version = "=1.10502.0", features = ["loadable-extension"] }
-quack-rs = "0.12"
 ruzstd = "0.8"
 vaporetto = { version = "0.6.5", default-features = false, features = ["std", "tag-prediction", "cache-type-score", "fix-weight-length", "charwise-pma"] }
 vaporetto_rules = "0.6.5"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+quack-rs = "0.12"
 
 [profile.release]
 lto = true
 strip = true
 codegen-units = 1
-
