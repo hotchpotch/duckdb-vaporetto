@@ -7,6 +7,10 @@ Fast Japanese full-text search helpers for DuckDB, powered by
 segment Japanese text into word-like tokens before you store, inspect, or search
 text in DuckDB.
 
+Release packages are available for native DuckDB and DuckDB-Wasm. The Wasm
+packages embed a Vaporetto model, so the same tokenization helpers can also run
+inside DuckDB-Wasm in a web browser.
+
 DuckDB's `fts` extension is a compact full-text search engine with BM25 ranking,
 but it does not currently expose a tokenizer hook like SQLite FTS5.
 `duckdb-vaporetto` combines DuckDB FTS with Vaporetto by following a
@@ -20,6 +24,10 @@ settings before calling `match_bm25()`.
 `duckdb-vaporetto` は DuckDB loadable extension です。日本語テキストを
 DuckDB に保存、確認、検索する前に、検索に適した単語へ分割する scalar function
 を追加します。
+
+native DuckDB 向けの配布物に加えて、DuckDB-Wasm 向けの配布物も提供しています。
+Wasm 版は Vaporetto model を同梱しているため、web browser 上の DuckDB-Wasm でも
+同じ tokenization helper を利用できます。
 
 DuckDB の `fts` extension は BM25 ranking を備えた小さな全文検索エンジンです
 が、SQLite FTS5 のような tokenizer hook は現在公開されていません。
