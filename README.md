@@ -1,17 +1,32 @@
-# duckdb-vaporetto
+# 🛥 duckdb-vaporetto
 
-Fast Japanese tokenization helpers for DuckDB, powered by
+Fast Japanese full-text search helpers for DuckDB, powered by
 [Vaporetto](https://github.com/daac-tools/vaporetto).
 
 `duckdb-vaporetto` is a DuckDB loadable extension. It adds scalar functions that
 segment Japanese text into word-like tokens before you store, inspect, or search
 text in DuckDB.
 
-DuckDB's `fts` extension does not currently expose a tokenizer hook like
-SQLite FTS5. Instead, `duckdb-vaporetto` follows a DuckDB-native flow: create a
-tokenized text column with Vaporetto, build a DuckDB FTS index on that column,
-and tokenize user input with the same Vaporetto settings before calling
-`match_bm25()`.
+DuckDB's `fts` extension is a compact full-text search engine with BM25 ranking,
+but it does not currently expose a tokenizer hook like SQLite FTS5.
+`duckdb-vaporetto` combines DuckDB FTS with Vaporetto by following a
+DuckDB-native flow: create a tokenized text column with Vaporetto, build a
+DuckDB FTS index on that column, and tokenize user input with the same Vaporetto
+settings before calling `match_bm25()`.
+
+[Vaporetto](https://github.com/daac-tools/vaporetto) を利用した、DuckDB 向け
+の高速な日本語全文検索 helper 拡張です。
+
+`duckdb-vaporetto` は DuckDB loadable extension です。日本語テキストを
+DuckDB に保存、確認、検索する前に、検索に適した単語へ分割する scalar function
+を追加します。
+
+DuckDB の `fts` extension は BM25 ranking を備えた小さな全文検索エンジンです
+が、SQLite FTS5 のような tokenizer hook は現在公開されていません。
+`duckdb-vaporetto` は DuckDB らしい流れで DuckDB FTS と Vaporetto を組み合わせ
+ます。Vaporetto で tokenized text column を作り、その column に DuckDB FTS index
+を作成し、user query も同じ Vaporetto 設定で tokenize してから `match_bm25()` に
+渡します。
 
 ## Quick Start
 
