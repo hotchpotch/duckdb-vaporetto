@@ -1,0 +1,24 @@
+[package]
+name = "duckdb-vaporetto"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+description = "DuckDB loadable extension backed by Vaporetto"
+repository = "https://github.com/hotchpotch/duckdb-vaporetto"
+
+[lib]
+name = "duckdb_vaporetto"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+libduckdb-sys = { version = "=1.10502.0", features = ["loadable-extension"] }
+quack-rs = "0.12"
+ruzstd = "0.8"
+vaporetto = { version = "0.6.5", default-features = false, features = ["std", "tag-prediction", "cache-type-score", "fix-weight-length", "charwise-pma"] }
+vaporetto_rules = "0.6.5"
+
+[profile.release]
+lto = true
+strip = true
+codegen-units = 1
+
