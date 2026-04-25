@@ -12,10 +12,11 @@ $oldTags = $env:DUCKDB_VAPORETTO_TAGS
 try {
     $extensionForSql = $Extension -replace '\\', '/'
     (Get-Content "tests/default_model.sql" -Raw).Replace("EXT_PATH", $extensionForSql) | Set-Content -Path $tmpSql -Encoding utf8
+    $tmpSqlForDuckdb = (Resolve-Path $tmpSql).Path -replace '\\', '/'
 
     Remove-Item Env:\DUCKDB_VAPORETTO_MODEL -ErrorAction SilentlyContinue
     Remove-Item Env:\DUCKDB_VAPORETTO_TAGS -ErrorAction SilentlyContinue
-    $output = & $DuckdbCli "-unsigned" ":memory:" ".read $tmpSql" 2>&1
+    $output = & $DuckdbCli "-unsigned" ":memory:" ".read $tmpSqlForDuckdb" 2>&1
     $exitCode = $LASTEXITCODE
 
     $output | ForEach-Object { Write-Host $_ }

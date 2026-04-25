@@ -11,9 +11,10 @@ $tmpSql = Join-Path ".tmp" ("scalar.{0}.sql" -f ([System.IO.Path]::GetRandomFile
 try {
     $extensionForSql = $Extension -replace '\\', '/'
     (Get-Content "tests/scalar.sql" -Raw).Replace("EXT_PATH", $extensionForSql) | Set-Content -Path $tmpSql -Encoding utf8
+    $tmpSqlForDuckdb = (Resolve-Path $tmpSql).Path -replace '\\', '/'
 
     $env:DUCKDB_VAPORETTO_MODEL = $Model
-    $output = & $DuckdbCli "-unsigned" ":memory:" ".read $tmpSql" 2>&1
+    $output = & $DuckdbCli "-unsigned" ":memory:" ".read $tmpSqlForDuckdb" 2>&1
     $exitCode = $LASTEXITCODE
 
     $output | ForEach-Object { Write-Host $_ }
