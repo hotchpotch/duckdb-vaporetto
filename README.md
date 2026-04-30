@@ -36,6 +36,15 @@ DuckDB の `fts` extension は BM25 ranking を備えた小さな全文検索エ
 を作成し、user query も同じ Vaporetto 設定で tokenize してから `match_bm25()` に
 渡します。
 
+Note: Vaporetto's pointwise-prediction word segmentation can produce different
+segmentations depending on surrounding context, so it does not guarantee the
+consistency that the same phrase is always split in the same way. It may be
+unsuitable for some full-text search use cases. Use it with care.
+
+注意: Vaporetto の点予測による単語分割は、前後の文脈によって分割結果が変わるこ
+とがあり、同じ語句が常に同じ形で分割される一貫性は保証されません。そのため、全
+文検索には向かない場合があります。注意してご利用ください。
+
 ## Quick Start
 
 Download the package for your operating system and CPU architecture from the
